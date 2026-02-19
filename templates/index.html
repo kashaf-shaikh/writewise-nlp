@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WriteWise – Intelligent Essay Grader</title>
+
+    <!-- Google Font (Industry Standard) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/spell_popup.css">
+
+    <style>
+        body {
+            background: #f5f7fb;
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+        }
+
+        /* ===== Header ===== */
+        .app-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #6b7280;
+        }
+
+        /* ===== Card ===== */
+        .main-card {
+            border-radius: 18px;
+            border: none;
+            background: #ffffff;
+        }
+
+        /* ===== Editor ===== */
+        .editor-box {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            min-height: 240px;
+            padding: 16px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            transition: 0.2s ease;
+        }
+
+        .editor-box:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+        }
+
+        .editor-box:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+        }
+
+        .spell-error {
+            background-color: #fff7ed;
+            text-decoration: underline;
+            text-decoration-color: #dc2626;
+            text-decoration-thickness: 2px;
+        }
+
+        /* ===== Analyze Button ===== */
+        .btn-analyze {
+            background: #6366f1;
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            transition: 0.25s ease;
+        }
+
+        .btn-analyze:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99,102,241,0.25);
+        }
+
+        /* ===== Writing Overview ===== */
+        #writingOverview {
+            background: #f9fafb;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        #writingOverview .metric-box {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .metric-title {
+            font-size: 0.8rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        /* ===== Result Section ===== */
+        .result-card {
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            padding: 18px;
+        }
+
+        .grade-badge {
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 8px;
+        }
+
+        .confidence-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        /* ===== Writing Style ===== */
+        .style-card {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 14px;
+            border-left: 4px solid #6366f1;
+        }
+
+        /* ===== Issue Panel ===== */
+        .issue-panel {
+            border-radius: 14px;
+            padding: 16px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            min-height: 240px;
+        }
+
+        .issue-item {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .issue-title {
+            font-weight: 600;
+        }
+
+        /* ===== Footer ===== */
+        .footer-text {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container my-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <div class="app-title">WriteWise</div>
+        <div class="subtitle">
+            Intelligent Essay Grader using NLP & Machine Learning
+        </div>
+    </div>
+
+    <!-- Main Card -->
+    <div class="card shadow-lg main-card">
+        <div class="card-body p-4">
+
+            <div class="row">
+
+                <!-- Editor -->
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold mb-2">Essay Input</label>
+                    <div
+                        id="textInput"
+                        class="editor-box"
+                        contenteditable="true"
+                        data-placeholder="Start writing your essay here..."
+                    ></div>
+                </div>
+
+                <!-- Issues -->
+                <div class="col-md-4">
+                    <div id="issuePanel" class="issue-panel">
+                        <h6 class="fw-bold mb-3">Language Issues</h6>
+                        <div id="issuesList"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Analyze -->
+            <div class="d-grid mt-4">
+                <button class="btn btn-analyze btn-lg" onclick="analyzeText()">
+                    Analyze Essay
+                </button>
+            </div>
+
+            <!-- Writing Overview -->
+            <div id="writingOverview" class="mt-4 p-4" style="display:none;">
+                <h6 class="fw-bold mb-3">Writing Overview</h6>
+                <div class="row g-3 text-center">
+                    <div class="col-md-4">
+                        <div class="metric-box">
+                            <div class="metric-title">Word Count</div>
+                            <div id="wordCount" class="metric-value">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-box">
+                            <div class="metric-title">Spelling Issues</div>
+                            <div id="spellingCount" class="metric-value text-danger">0</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="metric-box">
+                            <div class="metric-title">Grammar Issues</div>
+                            <div id="grammarCount" class="metric-value text-warning">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div id="result" class="mt-4"></div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-5 footer-text">
+        WriteWise • Final Year Project • NLP & Machine Learning • Developed by Kashaf Ruel
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/script.js"></script>
+<script src="/static/spell_popup.js"></script>
+
+</body>
+</html>

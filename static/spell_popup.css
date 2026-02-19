@@ -1,0 +1,36 @@
+/* spell_popup.css
+ *
+ * Styling for contextual spelling suggestion popup
+ */
+
+.spell-popup {
+    position: absolute;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 8px;
+    z-index: 1000;
+    min-width: 180px;
+    font-size: 14px;
+}
+
+.spell-popup-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.spell-popup-item:hover {
+    background-color: #f1f1f1;
+}
+
+.spell-popup-divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 6px 0;
+}
+
+.spell-popup-ignore {
+    color: #c0392b;
+}
