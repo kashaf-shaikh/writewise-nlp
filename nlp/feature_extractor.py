@@ -1,42 +1,46 @@
 """
 feature_extractor.py
 
-This module extracts linguistic, grammatical, spelling,
-and readability features from a paragraph of text.
-These features are used for text quality analysis
-and machine learning model training.
+Extracts linguistic, spelling,
+and readability features from text.
+LanguageTool dependency removed.
 """
 
+import os
 import nltk
-import language_tool_python
 import textstat
 from spellchecker import SpellChecker
 from nltk.tokenize import word_tokenize, sent_tokenize
 
-# Download required NLTK resources (run once)
-nltk.download('punkt')
+from context_analyzer.sentence_parser import SentenceParser
+from context_analyzer.grammar_rules import GrammarRuleChecker
 
-# Initialize tools (created once for performance)
-grammar_tool = language_tool_python.LanguageTool('en-US')
+# -------------------------------------------------
+# NLTK Safe Setup
+# -------------------------------------------------
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+NLTK_DATA_PATH = os.path.join(BASE_DIR, "..", "nltk_data")
+
+os.makedirs(NLTK_DATA_PATH, exist_ok=True)
+nltk.data.path.append(NLTK_DATA_PATH)
+
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", download_dir=NLTK_DATA_PATH)
+
+# -------------------------------------------------
+# Initialize tools (once)
+# -------------------------------------------------
+
 spell_checker = SpellChecker()
+sentence_parser = SentenceParser()
+grammar_checker = GrammarRuleChecker()
 
 
 def extract_all_features(text: str) -> dict:
-    """
-    Extract comprehensive NLP features from input text.
 
-    Parameters
-    ----------
-    text : str
-        Input paragraph.
-
-    Returns
-    -------
-    dict
-        Dictionary containing extracted numeric features.
-    """
-
-    # Handle empty input safely
     if not text or not text.strip():
         return {
             "word_count": 0,
@@ -53,12 +57,14 @@ def extract_all_features(text: str) -> dict:
             "flesch_kincaid_grade": 0.0
         }
 
+    # -----------------------------
     # Tokenization
+    # -----------------------------
+
     sentences = sent_tokenize(text)
     words = word_tokenize(text)
     words_alpha = [word for word in words if word.isalpha()]
 
-    # Basic statistics
     word_count = len(words_alpha)
     sentence_count = len(sentences)
     char_count = len(text)
@@ -77,21 +83,43 @@ def extract_all_features(text: str) -> dict:
         if word_count > 0 else 0.0
     )
 
-    # Grammar checking
-    grammar_matches = grammar_tool.check(text)
-    grammar_errors = len(grammar_matches)
+    # -----------------------------
+    # Grammar errors (Custom Rule Engine)
+    # -----------------------------
 
-    # Spelling checking
+    grammar_errors = 0
+    try:
+        parsed = sentence_parser.parse(text)
+        sentences_data = parsed.get("sentences", [])
+
+        for sentence_data in sentences_data:
+            issues = grammar_checker.check(sentence_data)
+            grammar_errors += len(issues)
+
+    except Exception:
+        grammar_errors = 0
+
+    # -----------------------------
+    # Spelling errors
+    # -----------------------------
+
     misspelled_words = spell_checker.unknown(words_alpha)
     spelling_errors = len(misspelled_words)
 
-    # Error density (per 100 words)
+    # -----------------------------
+    # Error density
+    # -----------------------------
+
     total_errors = grammar_errors + spelling_errors
+
     error_density = (
         (total_errors / word_count) * 100 if word_count > 0 else 0.0
     )
 
-    # Readability scores
+    # -----------------------------
+    # Readability
+    # -----------------------------
+
     flesch_reading_ease = textstat.flesch_reading_ease(text)
     flesch_kincaid_grade = textstat.flesch_kincaid_grade(text)
 
