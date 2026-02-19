@@ -5,43 +5,31 @@ import nltk
 from typing import List, Tuple
 
 # -------------------------------------------------
-# NLTK Safe Initialization (Render Compatible)
+# Safe NLTK Setup (Render-compatible)
 # -------------------------------------------------
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 NLTK_DATA_PATH = os.path.join(BASE_DIR, "..", "nltk_data")
 
-# Ensure nltk_data directory exists
 os.makedirs(NLTK_DATA_PATH, exist_ok=True)
-
-# Add custom nltk_data path
 nltk.data.path.append(NLTK_DATA_PATH)
 
+# Ensure punkt
+try:
+    nltk.data.find("tokenizers/punkt")
+except LookupError:
+    nltk.download("punkt", download_dir=NLTK_DATA_PATH)
 
-def _ensure_nltk_resource(resource_name: str, download_name: str):
-    """
-    Ensures required NLTK resource is available.
-    Downloads only if missing.
-    """
-    try:
-        nltk.data.find(resource_name)
-    except LookupError:
-        nltk.download(download_name, download_dir=NLTK_DATA_PATH)
+# Ensure averaged perceptron tagger (NEW FIX)
+try:
+    nltk.data.find("taggers/averaged_perceptron_tagger_eng")
+except LookupError:
+    nltk.download("averaged_perceptron_tagger_eng", download_dir=NLTK_DATA_PATH)
 
-
-# Ensure required resources
-_ensure_nltk_resource("tokenizers/punkt", "punkt")
-_ensure_nltk_resource("taggers/averaged_perceptron_tagger", "averaged_perceptron_tagger")
-
-
-# -------------------------------------------------
-# POS Tagger Class
-# -------------------------------------------------
 
 class POSTagger:
     """
     Lightweight POS tagging wrapper.
-    Keeps NLP logic isolated and reusable.
     """
 
     @staticmethod
