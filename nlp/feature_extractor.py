@@ -25,10 +25,18 @@ NLTK_DATA_PATH = os.path.join(BASE_DIR, "..", "nltk_data")
 os.makedirs(NLTK_DATA_PATH, exist_ok=True)
 nltk.data.path.append(NLTK_DATA_PATH)
 
+# Ensure punkt
 try:
     nltk.data.find("tokenizers/punkt")
 except LookupError:
     nltk.download("punkt", download_dir=NLTK_DATA_PATH)
+
+# Ensure punkt_tab (Required for newer NLTK versions)
+try:
+    nltk.data.find("tokenizers/punkt_tab")
+except LookupError:
+    nltk.download("punkt_tab", download_dir=NLTK_DATA_PATH)
+
 
 # -------------------------------------------------
 # Initialize tools (once)
