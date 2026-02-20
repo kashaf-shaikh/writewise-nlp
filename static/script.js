@@ -14,6 +14,33 @@
  * - It only communicates with Flask API
  */
 
+function renderIssueCard(issue, index) {
+    return `
+        <div class="issue-item">
+            <div class="issue-title">
+                Issue ${index}: ${issue.type || "Language"}
+            </div>
+
+            <div class="issue-context">
+                ${issue.message || "Language issue detected."}
+            </div>
+
+            ${issue.word ? `
+                <div><strong>Word:</strong> ${issue.word}</div>
+            ` : ""}
+
+            ${issue.suggestion ? `
+                <div class="mt-2">
+                    <strong>Suggestion:</strong>
+                    <div class="text-muted small">
+                        ${issue.suggestion}
+                    </div>
+                </div>
+            ` : ""}
+        </div>
+    `;
+}
+
 function analyzeText() {
     const textInput = document.getElementById("textInput");
     const resultDiv = document.getElementById("result");
@@ -67,19 +94,29 @@ function analyzeText() {
         }
 
         resultDiv.innerHTML = `
-            <div class="result-card p-3 mt-3">
-                <h5 class="mb-2">📊 Text Quality Result</h5>
-                <p class="mb-1">
-                    <strong>Predicted Grade:</strong>
-                    <span class="badge bg-success fs-6">
-                        ${data.predicted_grade}
-                    </span>
-                </p>
-                <p class="mb-1">
-                    <strong>Confidence:</strong>
-                    ${data.confidence}%
-                </p>
-                ${warningHTML}
+            <div class="result-card mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <div class="text-muted small">Predicted Grade</div>
+                        <div class="grade-badge text-white bg-danger">
+                            ${data.predicted_grade}
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <div class="text-muted small">Confidence</div>
+                        <div class="fw-semibold">
+                            ${data.confidence}%
+                        </div>
+                        ${!data.is_confident ? `
+                            <div class="text-warning small mt-1">
+                                ⚠ Low confidence prediction
+                            </div>
+                        ` : ""}
+                    </div>
+
+                </div>
             </div>
         `;
 
@@ -103,26 +140,67 @@ function analyzeText() {
 
         if (data.language_issues && data.language_issues.length > 0) {
 
-            data.language_issues.forEach((issue, index) => {
+            const issues = data.language_issues;
+            const firstIssue = issues[0];
+            const remainingIssues = issues.slice(1);
 
-                const issueHTML = `
-                    <div class="issue-item">
-                        <div class="issue-title">
-                            Issue ${index + 1}: ${issue.type || "Language"}
-                        </div>
-                        <div class="issue-context">
-                            ${issue.message || "Language issue detected."}
-                        </div>
-                        ${issue.word ? `<div><strong>Word:</strong> ${issue.word}</div>` : ""}
-                        <div><strong>Severity:</strong> ${issue.severity || "medium"}</div>
+            // -----------------------------
+            // Render FIRST issue (always visible)
+            // -----------------------------
+            const firstIssueHTML = renderIssueCard(firstIssue, 1);
+            issuesList.innerHTML += firstIssueHTML;
+
+            // -----------------------------
+            // Render remaining issues (hidden initially)
+            // -----------------------------
+            if (remainingIssues.length > 0) {
+
+                const hiddenContainerId = "extraIssuesContainer";
+
+                let hiddenHTML = `<div id="${hiddenContainerId}" style="display:none;">`;
+
+                remainingIssues.forEach((issue, index) => {
+                    hiddenHTML += renderIssueCard(issue, index + 2);
+                });
+
+                hiddenHTML += `</div>`;
+
+                issuesList.innerHTML += hiddenHTML;
+
+                // Add toggle button
+                issuesList.innerHTML += `
+                    <div class="text-center mt-2">
+                        <button id="toggleIssuesBtn"
+                                class="btn btn-sm btn-outline-danger">
+                            View ${remainingIssues.length} More Error(s) ▼
+                        </button>
                     </div>
                 `;
 
-                issuesList.innerHTML += issueHTML;
-            });
+                // Toggle logic
+                setTimeout(() => {
+                    const toggleBtn = document.getElementById("toggleIssuesBtn");
+                    const hiddenContainer = document.getElementById(hiddenContainerId);
+
+                    let expanded = false;
+
+                    toggleBtn.addEventListener("click", () => {
+
+                        expanded = !expanded;
+
+                        if (expanded) {
+                            hiddenContainer.style.display = "block";
+                            toggleBtn.innerText = "Show Less ▲";
+                        } else {
+                            hiddenContainer.style.display = "none";
+                            toggleBtn.innerText =
+                                `View ${remainingIssues.length} More Error(s) ▼`;
+                        }
+                    });
+                }, 0);
+            }
 
         } else {
-
             issuesList.innerHTML = `
                 <p class="text-muted">
                     ✅ No significant language issues detected.
@@ -338,3 +416,87 @@ function updateWritingOverview(text, languageIssues) {
     document.getElementById("writingOverview").style.display = "block";
 }
 
+/* =========================================================
+   STEP 1.2 — TXT FILE UPLOAD + CLEAR FUNCTIONALITY
+   ---------------------------------------------------------
+   - Loads .txt file content into editor
+   - Clears previous highlights and issues
+   - Fully safe (frontend only)
+   ========================================================= */
+
+/**
+ * Trigger hidden file input when Upload button is clicked
+ */
+document.getElementById("uploadTxtBtn").addEventListener("click", function () {
+    document.getElementById("txtFileInput").click();
+});
+
+
+/**
+ * Handle .txt file selection and load content into editor
+ */
+document.getElementById("txtFileInput").addEventListener("change", function (event) {
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    // Allow only .txt files
+    if (!file.name.endsWith(".txt")) {
+        alert("Please upload a valid .txt file.");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+
+        const content = e.target.result;
+
+        const editor = document.getElementById("textInput");
+
+        // Load text into editor (plain text only)
+        editor.innerText = content;
+
+        // Reset spell issues safely
+        window.spellIssues = [];
+
+        // Clear issue panel
+        const issuesList = document.getElementById("issuesList");
+        issuesList.innerHTML = "";
+
+        // Hide writing overview
+        document.getElementById("writingOverview").style.display = "none";
+
+        // Clear result section
+        document.getElementById("result").innerHTML = "";
+    };
+
+    reader.readAsText(file);
+
+    // Reset input so same file can be uploaded again
+    event.target.value = "";
+});
+
+
+/**
+ * Clear editor content completely
+ */
+document.getElementById("clearTextBtn").addEventListener("click", function () {
+
+    const editor = document.getElementById("textInput");
+
+    editor.innerText = "";
+
+    // Clear spell issues
+    window.spellIssues = [];
+
+    // Clear issue panel
+    document.getElementById("issuesList").innerHTML = "";
+
+    // Hide writing overview
+    document.getElementById("writingOverview").style.display = "none";
+
+    // Clear result section
+    document.getElementById("result").innerHTML = "";
+});

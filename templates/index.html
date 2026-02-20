@@ -13,10 +13,46 @@
     <link rel="stylesheet" href="/static/spell_popup.css">
 
     <style>
+        :root {
+            --primary: #EB4C4C;
+            --primary-soft: #FF7070;
+            --primary-light: #FFA6A6;
+            --background: #FAF3E1;
+            --white: #ffffff;
+            --text-dark: #2b2b2b;
+            --border-light: #f1d7b5;
+        }
+
         body {
-            background: #f5f7fb;
+            background: var(--background);
             font-family: 'Inter', sans-serif;
-            color: #1f2937;
+            color: var(--text-dark);
+        }
+
+        /* ===== Corporate Header Upgrade ===== */
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .app-title {
+            font-size: 2.6rem;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            color: #1e293b;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .tagline {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 4px;
         }
 
         .container {
@@ -27,53 +63,67 @@
         .app-title {
             font-size: 2.2rem;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            color: var(--primary);
         }
 
         .subtitle {
             font-size: 0.95rem;
-            color: #6b7280;
+            color: #7a5a5a;
         }
 
-        /* ===== Card ===== */
+        /* ===== Main Card ===== */
+        /* ===== Corporate Main Card ===== */
         .main-card {
-            border-radius: 18px;
-            border: none;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
             background: #ffffff;
-        }
-
-        /* ===== Editor ===== */
-        .editor-box {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            min-height: 240px;
-            padding: 16px;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
             transition: 0.2s ease;
         }
 
+        /* ===== Editor ===== */
+        /* ===== Corporate Editor ===== */
+        .editor-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            min-height: 260px;
+            padding: 18px;
+            font-size: 0.97rem;
+            line-height: 1.7;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
         .editor-box:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+            border-color: #EB4C4C;
+            box-shadow: 0 0 0 3px rgba(235, 76, 76, 0.08);
         }
 
         .editor-box:empty:before {
             content: attr(data-placeholder);
-            color: #9ca3af;
+            color: #94a3b8;
+        }
+
+        .editor-box:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(235, 76, 76, 0.15);
+        }
+
+        .editor-box:empty:before {
+            content: attr(data-placeholder);
+            color: #b88989;
         }
 
         .spell-error {
-            background-color: #fff7ed;
+            background-color: #ffe5e5;
             text-decoration: underline;
-            text-decoration-color: #dc2626;
+            text-decoration-color: var(--primary);
             text-decoration-thickness: 2px;
         }
 
         /* ===== Analyze Button ===== */
         .btn-analyze {
-            background: #6366f1;
+            background: var(--primary);
             color: white;
             font-weight: 600;
             border: none;
@@ -83,28 +133,29 @@
         }
 
         .btn-analyze:hover {
-            background: #4f46e5;
+            background: var(--primary-soft);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(99,102,241,0.25);
+            box-shadow: 0 8px 20px rgba(235, 76, 76, 0.35);
         }
 
         /* ===== Writing Overview ===== */
         #writingOverview {
-            background: #f9fafb;
+            background: #FBEFEF;
             border-radius: 14px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border-light);
         }
 
-        #writingOverview .metric-box {
-            background: #ffffff;
+        #writingOverview
+        .metric-box {
+            background: var(--white);
             border-radius: 12px;
             padding: 14px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border-light);
         }
 
         .metric-title {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: #a66a6a;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -115,58 +166,92 @@
         }
 
         /* ===== Result Section ===== */
+        /* ===== Executive Result Card Refined ===== */
         .result-card {
             background: #ffffff;
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
-            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid #f1f5f9;
+            padding: 28px;
+            box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05);
         }
 
+        /* Title (Predicted Grade / Confidence) */
+        .result-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: #1e293b;
+        }
+
+        /* Grade Badge Centered */
         .grade-badge {
-            font-size: 1.2rem;
+            font-size: 2rem;
             font-weight: 700;
-            padding: 6px 14px;
-            border-radius: 8px;
+            padding: 12px 26px;
+            border-radius: 14px;
+            background: #22c55e; /* Professional Green */
+            color: white;
+            display: inline-block;
+            margin-top: 8px;
         }
 
+        /* Confidence Value */
+        .confidence-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 8px;
+            color: #1e293b;
+        }
+
+        /* Grade badge upgrade */
+        .grade-badge {
+            font-size: 1.4rem;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 10px;
+        }
+
+        /* Confidence text refinement */
         .confidence-label {
-            font-size: 0.9rem;
-            color: #6b7280;
+            font-size: 0.92rem;
+            color: #64748b;
+            margin-top: 4px;
         }
 
-        /* ===== Writing Style ===== */
         .style-card {
-            background: #f3f4f6;
+            background: #fff2f2;
             border-radius: 12px;
             padding: 14px;
-            border-left: 4px solid #6366f1;
+            border-left: 4px solid var(--primary);
         }
 
         /* ===== Issue Panel ===== */
+        /* ===== Corporate Issue Panel ===== */
         .issue-panel {
             border-radius: 14px;
-            padding: 16px;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            min-height: 240px;
+            padding: 18px;
+            background: #FFCDC9;
+            border: 1px solid #f5a7a1;
+            min-height: 260px;
         }
 
         .issue-item {
-            background: #ffffff;
+            background: var(--white);
             border-radius: 10px;
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--border-light);
         }
 
         .issue-title {
             font-weight: 600;
+            color: var(--primary);
         }
 
         /* ===== Footer ===== */
         .footer-text {
             font-size: 0.85rem;
-            color: #9ca3af;
+            color: #a66a6a;
         }
     </style>
 </head>
@@ -176,10 +261,13 @@
 <div class="container my-5">
 
     <!-- Header -->
-    <div class="text-center mb-5">
+    <div class="header-section">
         <div class="app-title">WriteWise</div>
         <div class="subtitle">
-            Intelligent Essay Grader using NLP & Machine Learning
+            AI-Powered Essay Intelligence
+        </div>
+        <div class="tagline">
+            Evaluate • Improve • Excel
         </div>
     </div>
 
@@ -191,7 +279,34 @@
 
                 <!-- Editor -->
                 <div class="col-md-8">
-                    <label class="form-label fw-semibold mb-2">Essay Input</label>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-semibold mb-0">
+                            Essay Input
+                        </label>
+
+                        <div>
+                            <!-- Hidden File Input -->
+                            <input type="file"
+                                   id="txtFileInput"
+                                   accept=".txt"
+                                   style="display: none;">
+
+                            <!-- Upload Button -->
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger me-2"
+                                    id="uploadTxtBtn">
+                                📄 Upload .txt
+                            </button>
+
+                            <!-- Clear Button -->
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    id="clearTextBtn">
+                                🗑 Clear
+                            </button>
+                        </div>
+                    </div>
                     <div
                         id="textInput"
                         class="editor-box"

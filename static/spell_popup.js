@@ -113,9 +113,26 @@ function applySpellSuggestion(issue, suggestion) {
 /**
  * Igores spelling issue
  */
+/**
+ * Ignores a specific spelling issue
+ * - Removes only that issue from tracking
+ * - Re-renders highlights safely
+ * - Does NOT reset entire editor
+ */
 function ignoreSpellIssue(issue) {
+
     const editor = document.getElementById("textInput");
-    editor.innerText = editor.innerText;
+    const currentText = editor.innerText;
+
+    // 1️⃣ Remove only this issue from state
+    window.spellIssues = window.spellIssues.filter(
+        i => i.issue_id !== issue.issue_id
+    );
+
+    // 2️⃣ Re-highlight remaining spelling errors
+    highlightSpellingErrors(currentText, window.spellIssues);
+
+    // 3️⃣ Close popup
     closeSpellPopup();
 }
 
